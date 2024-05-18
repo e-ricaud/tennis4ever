@@ -92,6 +92,76 @@ public class ScoringServiceTest {
         assertEquals("Player A : 40 / Player B : 40 (Deuce)", result.split("\n")[result.split("\n").length - 1]);
     }
 
+    @Test
+    public void getScoringDetail_testPlayerAAdvantage() {
+        // Given
+        String input = "AAABBBA";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+        assertEquals("Player A has advantage", result.split("\n")[result.split("\n").length - 1]);
+    }
+
+    @Test
+    public void getScoringDetail_testPlayerBAdvantage() {
+        // Given
+        String input = "AAABBABB";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+        assertEquals("Player B has advantage", result.split("\n")[result.split("\n").length - 1]);
+    }
+
+    @Test
+    public void getScoringDetail_testPlayerAAdvantageWins() {
+        // Given
+        String input = "AAABBBAA";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+        assertEquals("Player A wins the game", result.split("\n")[result.split("\n").length - 1]);
+    }
+
+    @Test
+    public void getScoringDetail_testPlayerBAdvantageWins() {
+        // Given
+        String input = "AAABBABBB";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+        assertEquals("Player B wins the game", result.split("\n")[result.split("\n").length - 1]);
+    }
+
+    @Test
+    public void getScoringDetail_testBackToDeuce() {
+        // Given
+        String input = "AAABBAB";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+        assertEquals("Player A : 40 / Player B : 40 (Deuce)", result.split("\n")[result.split("\n").length - 1]);
+    }
+
+    @Test
+    public void getScoringDetail_testComplexGameSequence() {
+        // Given
+        String input = "ABABAA";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+
+        String expected = """
+                Player A : 15 / Player B : 0
+                Player A : 15 / Player B : 15
+                Player A : 30 / Player B : 15
+                Player A : 30 / Player B : 30
+                Player A : 40 / Player B : 30
+                Player A wins the game
+                """;
+
+        assertEquals(expected, result);
+    }
+
     @Nested
     class ScoringDetailExceptionsTests {
         private static Stream<Arguments> scoringInput_exceptions_provider() {
