@@ -3,16 +3,13 @@ package com.ericaud.tennis4ever.service;
 import com.ericaud.tennis4ever.service.model.Player;
 import org.apache.commons.lang3.StringUtils;
 
-public class ScoringService {
+import static com.ericaud.tennis4ever.service.enums.Score.*;
 
-    private static final int SCORE_LOVE = 0;
-    private static final int SCORE_FIFTEEN = 15;
-    private static final int SCORE_THIRTY = 30;
-    private static final int SCORE_FORTY = 40;
+public class ScoringService {
 
     public String getScoringDetail(String scoringSequence) {
         if (StringUtils.isEmpty(scoringSequence)) {
-            return "Player A : " + SCORE_LOVE + " / Player B : " + SCORE_LOVE;
+            return "Player A : " + LOVE.getValue() + " / Player B : " + LOVE.getValue();
         }
 
         // Collect distinct players
@@ -33,32 +30,39 @@ public class ScoringService {
 
         for (char point : scoringSequence.toCharArray()) {
             if (point == 'A') {
-                playerWinBall(playerA);
+                result.append(playerWinBall(playerA, playerB)).append("\n");
             } else {
-                playerWinBall(playerB);
+                result.append(playerWinBall(playerB, playerA)).append("\n");
             }
-            result.append(getScore(playerA, playerB)).append("\n");
         }
 
         return result.toString();
     }
 
-    private void playerWinBall(Player playerWinningBall) {
+    private String playerWinBall(Player playerWinningBall, Player playerLosingBall) {
         switch (playerWinningBall.getScore()) {
-            case SCORE_LOVE:
-                playerWinningBall.setScore(SCORE_FIFTEEN);
+            case LOVE :
+                playerWinningBall.setScore(FIFTEEN);
                 break;
-            case SCORE_FIFTEEN:
-                playerWinningBall.setScore(SCORE_THIRTY);
+            case FIFTEEN:
+                playerWinningBall.setScore(THIRTY);
                 break;
-            case SCORE_THIRTY:
-                playerWinningBall.setScore(SCORE_FORTY);
+            case THIRTY:
+                playerWinningBall.setScore(FORTY);
                 break;
+            case FORTY:
+                return "Player " + playerWinningBall.getName() + " wins the game";
         }
+        return getScore(playerWinningBall, playerLosingBall);
     }
 
-    private String getScore(Player playerA, Player playerB) {
-        return "Player A : " + playerA.getScore() + " / Player B : " + playerB.getScore();
+    private String getScore(Player playerWinningBall, Player playerLosingBall) {
+        int winningPlayerScore = playerWinningBall.getScore().getValue();
+        int losingPlayerScore = playerLosingBall.getScore().getValue();
+
+        return playerWinningBall.getName().equals("A") ?
+                String.format("Player A : %d / Player B : %d", winningPlayerScore, losingPlayerScore) :
+                String.format("Player A : %d / Player B : %d", losingPlayerScore, winningPlayerScore);
     }
 
 }
