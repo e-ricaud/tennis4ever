@@ -23,33 +23,33 @@ public class ScoringResourceTest {
     private ScoringService scoringService;
 
     @Test
-    public void getScoringDetail_should_return_OK() throws Exception {
+    public void getScoreDetail_should_return_OK() throws Exception {
         String scoringInput = "AABBAB";
 
         when(scoringService.getScoringDetail(scoringInput)).thenReturn("Winner is: " + scoringInput);
 
-        mockMvc.perform(get("/api/scoring/scoringDetail")
+        mockMvc.perform(get("/api/scoring/scoreDetail")
                 .param("scoringInput", scoringInput))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Winner is: " + scoringInput));
     }
 
     @Test
-    public void getScoringDetail_scoringInput_shouldBeOptional() throws Exception {
+    public void getScoreDetail_scoringInput_shouldBeOptional() throws Exception {
         // Calling the endpoint without the required path variable should result in a 400 Bad Request
         when(scoringService.getScoringDetail(any())).thenReturn(null);
 
-        mockMvc.perform(get("/api/scoring/scoringDetail")) // Notice the missing path variable
+        mockMvc.perform(get("/api/scoring/scoreDetail")) // Notice the missing path variable
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
     }
 
     @Test
-    public void getScoringDetail_shouldCatchException_and_rethrowBy_GlobalExceptionHandler() throws Exception {
+    public void getScoreDetail_shouldCatchException_and_rethrowBy_GlobalExceptionHandler() throws Exception {
         // Calling the endpoint without the required path variable should result in a 400 Bad Request
         when(scoringService.getScoringDetail(any())).thenThrow(new IllegalArgumentException("Scoring input cannot contain more than 2 players"));
 
-        mockMvc.perform(get("/api/scoring/scoringDetail"))
+        mockMvc.perform(get("/api/scoring/scoreDetail"))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().string("Scoring input cannot contain more than 2 players"));
     }

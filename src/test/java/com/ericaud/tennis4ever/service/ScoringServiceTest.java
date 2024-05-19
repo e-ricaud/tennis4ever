@@ -105,7 +105,7 @@ public class ScoringServiceTest {
     @Test
     public void getScoringDetail_testPlayerBAdvantage() {
         // Given
-        String input = "AAABBABB";
+        String input = "AABBABB";
         // When
         String result = scoringService.getScoringDetail(input);
         // Then
@@ -125,7 +125,7 @@ public class ScoringServiceTest {
     @Test
     public void getScoringDetail_testPlayerBAdvantageWins() {
         // Given
-        String input = "AAABBABBB";
+        String input = "AAABBBBB";
         // When
         String result = scoringService.getScoringDetail(input);
         // Then
@@ -135,7 +135,7 @@ public class ScoringServiceTest {
     @Test
     public void getScoringDetail_testBackToDeuce() {
         // Given
-        String input = "AAABBAB";
+        String input = "AAABBBBA";
         // When
         String result = scoringService.getScoringDetail(input);
         // Then
@@ -167,13 +167,14 @@ public class ScoringServiceTest {
         private static Stream<Arguments> scoringInput_exceptions_provider() {
             return Stream.of(
                     Arguments.of("AABBC", "Scoring input cannot contain more than 2 players"),
-                    Arguments.of("CC", "Scoring input should contain only 'A' or 'B' players")
+                    Arguments.of("CC", "Scoring input should contain only 'A' or 'B' players"),
+                    Arguments.of("AAAAA", "Scoring input invalid because game finishing before end of sequence")
             );
         }
 
         @ParameterizedTest
         @MethodSource("scoringInput_exceptions_provider")
-        public void getScoringDetail_without1or2Players_shouldThrowException(String scoringInput, String exceptionMessage) {
+        public void getScoringDetail_shouldThrowException(String scoringInput, String exceptionMessage) {
             // When - Then
             IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class,
                     () -> scoringService.getScoringDetail(scoringInput));

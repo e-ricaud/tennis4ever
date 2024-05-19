@@ -18,8 +18,8 @@ public class ScoringResource {
         this.scoringService = scoringService;
     }
 
-    @GetMapping("/scoringDetail")
-    public String getScoringDetail(@RequestParam(required = false) String scoringInput) {
+    @GetMapping("/scoreDetail")
+    public String getScoreDetail(@RequestParam(required = false) String scoringInput) {
         try {
             return scoringService.getScoringDetail(scoringInput);
         } catch (IllegalArgumentException exception) {
