@@ -50,6 +50,38 @@ public class ScoringServiceTest {
         assertEquals("Player A : 0 / Player B : 15", result.trim());
     }
 
+    @Test
+    public void getScoringDetail_testPlayerAWinsGame() {
+        // Given
+        String input = "AAAA";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+        String expected = """
+                Player A : 15 / Player B : 0
+                Player A : 30 / Player B : 0
+                Player A : 40 / Player B : 0
+                Player A wins the game
+                """;
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void getScoringDetail_testPlayerBWinsGame() {
+        // Given
+        String input = "BBBB";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+        String expected = """
+                Player A : 0 / Player B : 15
+                Player A : 0 / Player B : 30
+                Player A : 0 / Player B : 40
+                Player B wins the game
+                """;
+        assertEquals(expected, result);
+    }
+
     @Nested
     class ScoringDetailExceptionsTests {
         private static Stream<Arguments> scoringInput_exceptions_provider() {
