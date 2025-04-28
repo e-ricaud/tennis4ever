@@ -1,9 +1,13 @@
 package com.ericaud.tennis4ever.service;
 
+import com.ericaud.tennis4ever.service.enums.Score;
 import com.ericaud.tennis4ever.service.model.Player;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.ericaud.tennis4ever.service.enums.Score.*;
+import static com.ericaud.tennis4ever.service.enums.Score.LOVE;
+import static com.ericaud.tennis4ever.service.enums.Score.FIFTEEN;
+import static com.ericaud.tennis4ever.service.enums.Score.THIRTY;
+import static com.ericaud.tennis4ever.service.enums.Score.FORTY;
 
 public class ScoringService {
 
@@ -51,9 +55,33 @@ public class ScoringService {
                 playerWinningBall.setScore(FORTY);
                 break;
             case FORTY:
-                return "Player " + playerWinningBall.getName() + " wins the game";
+                return handleWinningPoint(playerWinningBall, playerLosingBall);
         }
         return getScore(playerWinningBall, playerLosingBall);
+    }
+
+    private String handleWinningPoint(Player playerWinningBall, Player playerLosingBall) {
+        Score losingPlayerScore = playerLosingBall.getScore();
+
+        if (losingPlayerScore.equals(FORTY)) {
+            return handleAdvantage(playerWinningBall, playerLosingBall);
+        }
+
+        return declareWinner(playerWinningBall);
+    }
+
+    private String handleAdvantage(Player playerWinningBall, Player playerLosingBall) {
+        if (!playerWinningBall.isAdvantage() && !playerLosingBall.isAdvantage()) {
+            playerWinningBall.setAdvantage(true);
+            return "Player " + playerWinningBall.getName() + " has advantage";
+        }
+
+        if (!playerWinningBall.isAdvantage() && playerLosingBall.isAdvantage()) {
+            playerLosingBall.setAdvantage(false);
+            return getScore(playerWinningBall, playerLosingBall);
+        }
+
+        return declareWinner(playerWinningBall);
     }
 
     private String getScore(Player playerWinningBall, Player playerLosingBall) {
@@ -68,6 +96,10 @@ public class ScoringService {
                     String.format("Player A : %d / Player B : %d", losingPlayerScore, winningPlayerScore);
         }
 
+    }
+
+    private String declareWinner(Player playerWinningBall) {
+        return "Player " + playerWinningBall.getName() + " wins the game";
     }
 
 }
