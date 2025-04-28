@@ -14,7 +14,7 @@ public class ScoringService {
 
         // Collect distinct players
         long distinctCharCount = scoringSequence.chars().distinct().count();
-        if (distinctCharCount >= 2) {
+        if (distinctCharCount > 2) {
             throw new IllegalArgumentException("Scoring input cannot contain more than 2 players");
         }
 
@@ -60,9 +60,14 @@ public class ScoringService {
         int winningPlayerScore = playerWinningBall.getScore().getValue();
         int losingPlayerScore = playerLosingBall.getScore().getValue();
 
-        return playerWinningBall.getName().equals("A") ?
-                String.format("Player A : %d / Player B : %d", winningPlayerScore, losingPlayerScore) :
-                String.format("Player A : %d / Player B : %d", losingPlayerScore, winningPlayerScore);
+        if (winningPlayerScore == 40 && losingPlayerScore == 40) {
+            return "Player A : 40 / Player B : 40 (Deuce)";
+        } else {
+            return playerWinningBall.getName().equals("A") ?
+                    String.format("Player A : %d / Player B : %d", winningPlayerScore, losingPlayerScore) :
+                    String.format("Player A : %d / Player B : %d", losingPlayerScore, winningPlayerScore);
+        }
+
     }
 
 }

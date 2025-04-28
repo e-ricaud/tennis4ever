@@ -82,6 +82,16 @@ public class ScoringServiceTest {
         assertEquals(expected, result);
     }
 
+    @Test
+    public void getScoringDetail_testDeuce() {
+        // Given
+        String input = "AAABBB";
+        // When
+        String result = scoringService.getScoringDetail(input);
+        // Then
+        assertEquals("Player A : 40 / Player B : 40 (Deuce)", result.split("\n")[result.split("\n").length - 1]);
+    }
+
     @Nested
     class ScoringDetailExceptionsTests {
         private static Stream<Arguments> scoringInput_exceptions_provider() {
