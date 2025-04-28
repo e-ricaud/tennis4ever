@@ -2,6 +2,7 @@ package com.ericaud.tennis4ever.service;
 
 import com.ericaud.tennis4ever.service.enums.Score;
 import com.ericaud.tennis4ever.service.model.Player;
+import com.ericaud.tennis4ever.service.model.TennisGame;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.ericaud.tennis4ever.service.enums.Score.LOVE;
@@ -27,23 +28,26 @@ public class ScoringService {
             throw new IllegalArgumentException("Scoring input should contain only 'A' or 'B' players");
         }
 
-        Player playerA = new Player("A");
-        Player playerB = new Player("B");
+        TennisGame tennisGame = new TennisGame(new Player("A"), new Player("B"));
 
         StringBuilder result = new StringBuilder();
 
         for (char point : scoringSequence.toCharArray()) {
+            if(tennisGame.isGameFinishing()) {
+                throw new IllegalArgumentException("Scoring input invalid because game finishing before end of sequence");
+            }
+
             if (point == 'A') {
-                result.append(playerWinBall(playerA, playerB)).append("\n");
+                result.append(playerWinBall(tennisGame, tennisGame.getPlayerA(), tennisGame.getPlayerB())).append("\n");
             } else {
-                result.append(playerWinBall(playerB, playerA)).append("\n");
+                result.append(playerWinBall(tennisGame, tennisGame.getPlayerB(), tennisGame.getPlayerA())).append("\n");
             }
         }
 
         return result.toString();
     }
 
-    private String playerWinBall(Player playerWinningBall, Player playerLosingBall) {
+    private String playerWinBall(TennisGame tennisGame, Player playerWinningBall, Player playerLosingBall) {
         switch (playerWinningBall.getScore()) {
             case LOVE :
                 playerWinningBall.setScore(FIFTEEN);
@@ -55,22 +59,22 @@ public class ScoringService {
                 playerWinningBall.setScore(FORTY);
                 break;
             case FORTY:
-                return handleWinningPoint(playerWinningBall, playerLosingBall);
+                return handleWinningPoint(tennisGame, playerWinningBall, playerLosingBall);
         }
         return getScore(playerWinningBall, playerLosingBall);
     }
 
-    private String handleWinningPoint(Player playerWinningBall, Player playerLosingBall) {
+    private String handleWinningPoint(TennisGame tennisGame, Player playerWinningBall, Player playerLosingBall) {
         Score losingPlayerScore = playerLosingBall.getScore();
 
         if (losingPlayerScore.equals(FORTY)) {
-            return handleAdvantage(playerWinningBall, playerLosingBall);
+            return handleAdvantage(tennisGame, playerWinningBall, playerLosingBall);
         }
 
-        return declareWinner(playerWinningBall);
+        return declareWinner(tennisGame, playerWinningBall);
     }
 
-    private String handleAdvantage(Player playerWinningBall, Player playerLosingBall) {
+    private String handleAdvantage(TennisGame tennisGame, Player playerWinningBall, Player playerLosingBall) {
         if (!playerWinningBall.isAdvantage() && !playerLosingBall.isAdvantage()) {
             playerWinningBall.setAdvantage(true);
             return "Player " + playerWinningBall.getName() + " has advantage";
@@ -81,7 +85,7 @@ public class ScoringService {
             return getScore(playerWinningBall, playerLosingBall);
         }
 
-        return declareWinner(playerWinningBall);
+        return declareWinner(tennisGame, playerWinningBall);
     }
 
     private String getScore(Player playerWinningBall, Player playerLosingBall) {
@@ -95,10 +99,10 @@ public class ScoringService {
                     String.format("Player A : %d / Player B : %d", winningPlayerScore, losingPlayerScore) :
                     String.format("Player A : %d / Player B : %d", losingPlayerScore, winningPlayerScore);
         }
-
     }
 
-    private String declareWinner(Player playerWinningBall) {
+    private String declareWinner(TennisGame tennisGame, Player playerWinningBall) {
+        tennisGame.setGameFinishing(true);
         return "Player " + playerWinningBall.getName() + " wins the game";
     }
 

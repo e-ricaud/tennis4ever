@@ -4,7 +4,7 @@ import com.ericaud.tennis4ever.service.enums.Score;
 
 import java.util.Objects;
 
-public class Player{
+public class Player {
 
     private final String name;
     private Score score;
