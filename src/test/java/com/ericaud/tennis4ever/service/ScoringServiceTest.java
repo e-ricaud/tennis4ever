@@ -166,7 +166,7 @@ public class ScoringServiceTest {
     class ScoringDetailExceptionsTests {
         private static Stream<Arguments> scoringInput_exceptions_provider() {
             return Stream.of(
-                    Arguments.of("AABBC", "Scoring input cannot contain more than 2 players"),
+                    Arguments.of("AABBC", "Scoring input should contain only 'A' or 'B' players"),
                     Arguments.of("CC", "Scoring input should contain only 'A' or 'B' players"),
                     Arguments.of("AAAAA", "Scoring input invalid because game finishing before end of sequence")
             );

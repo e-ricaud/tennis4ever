@@ -12,98 +12,103 @@ import static com.ericaud.tennis4ever.service.enums.Score.FORTY;
 
 public class ScoringService {
 
+    private static final String PLAYER_A_NAME = "A";
+    private static final String PLAYER_B_NAME = "B";
+
+    /**
+     * Calculates and returns the detailed point-by-point score for a given sequence.
+     *
+     * @param scoringSequence A string containing only the characters 'A' or 'B',
+     * representing the player who won each point.
+     * @return A multi-line string detailing the score after each point.
+     * @throws IllegalArgumentException If the sequence is invalid (contains other characters,
+     * implies more than 2 players, or continues after the game is over).
+     */
     public String getScoringDetail(String scoringSequence) {
         if (StringUtils.isEmpty(scoringSequence)) {
-            return "Player A : " + LOVE.getValue() + " / Player B : " + LOVE.getValue();
+            return formatScore(LOVE.getValue(), LOVE.getValue(), false, false);
         }
 
-        // Collect distinct players
-        long distinctCharCount = scoringSequence.chars().distinct().count();
-        if (distinctCharCount > 2) {
-            throw new IllegalArgumentException("Scoring input cannot contain more than 2 players");
+        if (!scoringSequence.matches("[" + PLAYER_A_NAME + PLAYER_B_NAME + "]+")) {
+            throw new IllegalArgumentException("Scoring input should contain only '" + PLAYER_A_NAME + "' or '" + PLAYER_B_NAME + "' players");
         }
 
-        // Contain only A or B
-        if (!scoringSequence.matches("[AB]+")) {
-            throw new IllegalArgumentException("Scoring input should contain only 'A' or 'B' players");
-        }
-
-        TennisGame tennisGame = new TennisGame(new Player("A"), new Player("B"));
-
+        TennisGame tennisGame = new TennisGame(new Player(PLAYER_A_NAME), new Player(PLAYER_B_NAME));
         StringBuilder result = new StringBuilder();
 
-        for (char point : scoringSequence.toCharArray()) {
+        for (char pointWinnerChar : scoringSequence.toCharArray()) {
             if(tennisGame.isGameFinishing()) {
                 throw new IllegalArgumentException("Scoring input invalid because game finishing before end of sequence");
             }
 
-            if (point == 'A') {
-                result.append(playerWinBall(tennisGame, tennisGame.getPlayerA(), tennisGame.getPlayerB())).append("\n");
-            } else {
-                result.append(playerWinBall(tennisGame, tennisGame.getPlayerB(), tennisGame.getPlayerA())).append("\n");
-            }
+            Player winningPlayer = (pointWinnerChar == PLAYER_A_NAME.charAt(0)) ? tennisGame.getPlayerA() : tennisGame.getPlayerB();
+            Player losingPlayer = (pointWinnerChar == PLAYER_A_NAME.charAt(0)) ? tennisGame.getPlayerB() : tennisGame.getPlayerA();
+
+            String scoreAfterPoint = playerWinsPoint(tennisGame, winningPlayer, losingPlayer);
+            result.append(scoreAfterPoint).append("\n");
         }
 
         return result.toString();
     }
 
-    private String playerWinBall(TennisGame tennisGame, Player playerWinningBall, Player playerLosingBall) {
-        switch (playerWinningBall.getScore()) {
-            case LOVE :
-                playerWinningBall.setScore(FIFTEEN);
-                break;
-            case FIFTEEN:
-                playerWinningBall.setScore(THIRTY);
-                break;
-            case THIRTY:
-                playerWinningBall.setScore(FORTY);
-                break;
-            case FORTY:
-                return handleWinningPoint(tennisGame, playerWinningBall, playerLosingBall);
+    private String playerWinsPoint(TennisGame tennisGame, Player playerWinningPoint, Player playerLosingPoint) {
+        switch (playerWinningPoint.getScore()) {
+            case LOVE -> playerWinningPoint.setScore(FIFTEEN);
+            case FIFTEEN -> playerWinningPoint.setScore(THIRTY);
+            case THIRTY -> {
+                playerWinningPoint.setScore(FORTY);
+                if (playerLosingPoint.getScore() == FORTY) {
+                    return formatScore(tennisGame);
+                }
+            }
+            case FORTY -> {
+                return handlePointWhenForty(tennisGame, playerWinningPoint, playerLosingPoint);
+            }
         }
-        return getScore(playerWinningBall, playerLosingBall);
+        return formatScore(tennisGame);
     }
 
-    private String handleWinningPoint(TennisGame tennisGame, Player playerWinningBall, Player playerLosingBall) {
-        Score losingPlayerScore = playerLosingBall.getScore();
+    private String handlePointWhenForty(TennisGame tennisGame, Player playerWinningPoint, Player playerLosingPoint) {
+        Score losingPlayerScore = playerLosingPoint.getScore();
 
-        if (losingPlayerScore.equals(FORTY)) {
-            return handleAdvantage(tennisGame, playerWinningBall, playerLosingBall);
+        if (losingPlayerScore == FORTY) {
+            return handleAdvantageScenarios(tennisGame, playerWinningPoint, playerLosingPoint);
         }
-
-        return declareWinner(tennisGame, playerWinningBall);
+        return declareWinner(tennisGame, playerWinningPoint);
     }
 
-    private String handleAdvantage(TennisGame tennisGame, Player playerWinningBall, Player playerLosingBall) {
-        if (!playerWinningBall.isAdvantage() && !playerLosingBall.isAdvantage()) {
-            playerWinningBall.setAdvantage(true);
-            return "Player " + playerWinningBall.getName() + " has advantage";
+
+    private String handleAdvantageScenarios(TennisGame tennisGame, Player playerWinningPoint, Player playerLosingPoint) {
+        if (!playerWinningPoint.isAdvantage() && !playerLosingPoint.isAdvantage()) {
+            playerWinningPoint.setAdvantage(true);
+            return "Player " + playerWinningPoint.getName() + " has advantage";
         }
 
-        if (!playerWinningBall.isAdvantage() && playerLosingBall.isAdvantage()) {
-            playerLosingBall.setAdvantage(false);
-            return getScore(playerWinningBall, playerLosingBall);
+        if (playerLosingPoint.isAdvantage()) {
+            playerLosingPoint.setAdvantage(false);
+            return formatScore(tennisGame);
         }
 
-        return declareWinner(tennisGame, playerWinningBall);
+        return declareWinner(tennisGame, playerWinningPoint);
     }
 
-    private String getScore(Player playerWinningBall, Player playerLosingBall) {
-        int winningPlayerScore = playerWinningBall.getScore().getValue();
-        int losingPlayerScore = playerLosingBall.getScore().getValue();
-
-        if (winningPlayerScore == 40 && losingPlayerScore == 40) {
-            return "Player A : 40 / Player B : 40 (Deuce)";
-        } else {
-            return playerWinningBall.getName().equals("A") ?
-                    String.format("Player A : %d / Player B : %d", winningPlayerScore, losingPlayerScore) :
-                    String.format("Player A : %d / Player B : %d", losingPlayerScore, winningPlayerScore);
-        }
+    private String formatScore(TennisGame tennisGame) {
+        Player playerA = tennisGame.getPlayerA();
+        Player playerB = tennisGame.getPlayerB();
+        return formatScore(playerA.getScore().getValue(), playerB.getScore().getValue(), playerA.isAdvantage(), playerB.isAdvantage());
     }
 
-    private String declareWinner(TennisGame tennisGame, Player playerWinningBall) {
+    private String formatScore(int scoreA, int scoreB, boolean advantageA, boolean advantageB) {
+        if (scoreA == FORTY.getValue() && scoreB == FORTY.getValue() && !advantageA && !advantageB) {
+            return String.format("Player %s : %d / Player %s : %d (Deuce)", PLAYER_A_NAME, scoreA, PLAYER_B_NAME, scoreB);
+        }
+
+        return String.format("Player %s : %d / Player %s : %d", PLAYER_A_NAME, scoreA, PLAYER_B_NAME, scoreB);
+    }
+
+    private String declareWinner(TennisGame tennisGame, Player winner) {
         tennisGame.setGameFinishing(true);
-        return "Player " + playerWinningBall.getName() + " wins the game";
+        return "Player " + winner.getName() + " wins the game";
     }
 
 }
